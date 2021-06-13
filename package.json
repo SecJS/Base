@@ -1,0 +1,107 @@
+{
+  "name": "@secjs/base",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": "João Lenon",
+  "repository": "https://github.com/SecJS/Base.git",
+  "bugs": "https://github.com/SecJS/Base/issues",
+  "homepage": "https://github.com/SecJS/Base#readme",
+  "scripts": {
+    "mrm": "mrm --preset=@adonisjs/mrm-preset",
+    "lint": "yarn eslint --fix",
+    "compile": "tsc",
+    "build": "yarn compile",
+    "prepublishOnly": "yarn build",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "@adonisjs/mrm-preset": "2.0.3",
+    "@types/luxon": "^1.25.1",
+    "@types/node": "^14.14.3",
+    "eslint": "^7.1.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "husky": "^3.0.9",
+    "lint-staged": "^9.4.3",
+    "luxon": "^1.25.0",
+    "mongoose": "^5.11.15",
+    "mrm": "^2.2.1",
+    "prettier": "^2.0.5",
+    "reflect-metadata": "^0.1.13",
+    "ts-node": "^8.9.0",
+    "typeorm": "^0.2.29",
+    "typescript": "^4.0.3"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.json": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "avoid",
+    "endOfLine": "lf",
+    "semi": false,
+    "printWidth": 80,
+    "overrides": [
+      {
+        "files": "test/**/*",
+        "options": {
+          "printWidth": 120
+        }
+      }
+    ]
+  },
+  "eslintConfig": {
+    "env": {
+      "es6": true,
+      "node": true
+    },
+    "extends": [
+      "standard",
+      "plugin:prettier/recommended"
+    ],
+    "globals": {
+      "use": true,
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+      "ecmaVersion": 2018
+    },
+    "plugins": [
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": "error",
+      "camelcase": "off"
+    }
+  },
+  "files": [
+    "services/*.js",
+    "services/*.d.ts",
+    "repositories/*.js",
+    "repositories/*.d.ts",
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {
+    "@secjs/utils": "^1.1.4"
+  }
+}
