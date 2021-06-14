@@ -1,6 +1,6 @@
 {
   "name": "@secjs/base",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "author": "João Lenon",
   "repository": "https://github.com/SecJS/Base.git",
@@ -102,6 +102,6 @@
     "index.js"
   ],
   "dependencies": {
-    "@secjs/utils": "^1.1.4"
+    "@secjs/utils": "^1.1.5"
   }
 }
