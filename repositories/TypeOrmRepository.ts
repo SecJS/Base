@@ -223,6 +223,10 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       }
     }
 
+    if (model.deletedAt) {
+      throw new Error('MODEL_IS_ALREADY_DELETED')
+    }
+
     if (soft) {
       return this.updateOne(id, { deletedAt: new Date() })
     }

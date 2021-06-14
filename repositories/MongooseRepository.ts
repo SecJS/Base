@@ -148,6 +148,10 @@ export abstract class MongooseRepository<TModel extends Document> {
       }
     }
 
+    if (model.deletedAt) {
+      throw new Error('MODEL_IS_ALREADY_DELETED')
+    }
+
     if (soft) {
       model.deletedAt = new Date()
 

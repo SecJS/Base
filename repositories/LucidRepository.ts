@@ -97,6 +97,10 @@ export abstract class LucidRepository<TModel> {
       throw new Error('MODEL_NOT_FOUND_DELETE')
     }
 
+    if (model.deletedAt) {
+      throw new Error('MODEL_IS_ALREADY_DELETED')
+    }
+
     model.deletedAt = DateTime.fromJSDate(new Date())
 
     return model.save()
