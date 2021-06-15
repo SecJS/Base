@@ -51,8 +51,14 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
         throw new Error(`According to ${this.Model.constructor.name} model, it is not possible to filter by ${key}`)
       }
 
-      if (!value) {
+      if (value === 'null') {
         query.andWhere(`${alias}.${key} IS NULL`)
+
+        return
+      }
+
+      if (value === '!null') {
+        query.andWhere(`${alias}.${key} IS NOT NULL`)
 
         return
       }
@@ -68,6 +74,16 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       const valueInString = value.toString()
 
       if (valueInString.indexOf(',') > 0) {
+        if (valueInString.indexOf('!') > 0) {
+          valueInString.replace('!', '')
+
+          query.andWhere(`${alias}.${key} NOT IN (:...${key})`, {
+            [key]: new Parser().stringToArray(valueInString, ','),
+          })
+
+          return
+        }
+
         query.andWhere(`${alias}.${key} IN (:...${key})`, {
           [key]: new Parser().stringToArray(valueInString, ','),
         })
