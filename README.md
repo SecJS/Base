@@ -85,7 +85,7 @@ class UserRepository extends TypeOrmBaseRepository<User> {
   
   // Both, wheres and relations will only work for external requests.
 
-  protected Model = new User() // Give the Model value to Lucid, so he knows what to work with
+  protected Model = User.name // Give the Model value to Lucid, so he knows what to work with
   // You can subscribe TypeOrmBaseRepository methods in here if you want!  
 }
 ```
