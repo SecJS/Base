@@ -207,10 +207,10 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
     if (typeof id === 'string' || typeof id === 'number') {
       model = await this.getOne(id)
+    }
 
-      if (!model) {
-        throw new Error('MODEL_NOT_FOUND_UPDATE')
-      }
+    if (!model) {
+      throw new Error('MODEL_NOT_FOUND_UPDATE')
     }
 
     Object.keys(body).forEach((key) => {
@@ -233,10 +233,10 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
     if (typeof id === 'string' || typeof id === 'number') {
       model = await this.getOne(id)
+    }
 
-      if (!model) {
-        throw new Error('MODEL_NOT_FOUND_DELETE')
-      }
+    if (!model) {
+      throw new Error('MODEL_NOT_FOUND_DELETE')
     }
 
     if (model.deletedAt) {
