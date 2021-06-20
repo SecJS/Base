@@ -73,8 +73,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
       const valueInString = value.toString()
 
-      if (valueInString.indexOf(',') > 0) {
-        if (valueInString.indexOf('!') > 0) {
+      if (valueInString.includes(',')) {
+        if (valueInString.includes('!')) {
           valueInString.replace('!', '')
 
           query.andWhere(`${alias}.${key} NOT IN (:...${key})`, {
