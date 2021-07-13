@@ -6,7 +6,7 @@ import {
   PaginationContract,
   PaginatedResponse,
 } from '@secjs/contracts'
-import { Parser, paginate } from '@secjs/utils'
+import { Parser, paginate, Token } from '@secjs/utils'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 
 export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
@@ -130,7 +130,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
         throw new Error(`According to ${this.Model.constructor.name} model, it is not possible to include ${include.relation}`)
       }
 
-      const includeAlias = `${include.relation}`.toLocaleUpperCase()
+      const includeAlias = `${include.relation}-${new Token().generate()}`.toLocaleUpperCase()
 
       query.leftJoinAndSelect(`${alias}.${include.relation}`, includeAlias)
 
