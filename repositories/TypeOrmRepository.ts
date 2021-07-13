@@ -73,6 +73,14 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
       const valueInString = value.toString()
 
+      if (valueInString.includes('%')) {
+        query.andWhere(`${alias}.${key} like :${key}`, {
+          [key]:`%${value}%`
+        })
+
+        return
+      }
+
       if (valueInString.includes(',')) {
         if (valueInString.includes('!')) {
           valueInString.replace('!', '')
