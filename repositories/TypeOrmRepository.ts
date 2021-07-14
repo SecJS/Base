@@ -63,6 +63,16 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
         return
       }
 
+      if (typeof value === 'string' && value.includes('%')) {
+        value.replace('%', '')
+
+        query.andWhere(`${alias}.${key} like :${key}`, {
+          [key]:`%${value}%`
+        })
+
+        return
+      }
+
       if (Array.isArray(value)) {
         query.andWhere(`${alias}.${key} ::jsonb @> :${key}`, {
           [key]: JSON.stringify(value),
@@ -72,14 +82,6 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       }
 
       const valueInString = value.toString()
-
-      if (valueInString.includes('%')) {
-        query.andWhere(`${alias}.${key} like :${key}`, {
-          [key]:`%${value}%`
-        })
-
-        return
-      }
 
       if (valueInString.includes(',')) {
         if (valueInString.includes('!')) {
