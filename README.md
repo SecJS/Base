@@ -113,4 +113,6 @@ class UserRepository extends MongooseBaseRepository<User> {
 
 ---
 
+## License
+
 Made with 🖤 by [jlenon7](https://github.com/jlenon7) :wave:
