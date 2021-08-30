@@ -1,6 +1,13 @@
 import { paginate } from '@secjs/utils'
 import { Model, Document, isValidObjectId } from 'mongoose'
-import { ApiRequestContract, IncludesContract, OrderByContract, WhereContract, PaginationContract, PaginatedResponse } from '@secjs/contracts'
+import {
+  ApiRequestContract,
+  IncludesContract,
+  OrderByContract,
+  WhereContract,
+  PaginationContract,
+  PaginatedResponse,
+} from '@secjs/contracts'
 
 export abstract class MongooseRepository<TModel extends Document> {
   protected abstract Model: Model<TModel>
@@ -27,7 +34,21 @@ export abstract class MongooseRepository<TModel extends Document> {
 
   private factoryWhere(query: any, where: WhereContract) {
     Object.keys(where).forEach(key => {
-      const value = where[key]
+      let value: any = where[key]
+
+      if (value === 'null') value = null
+      if (value === '!null') value = { $ne: null }
+
+      if (Array.isArray(value)) {
+        value = { $in: value }
+      }
+
+      if (value.includes('->')) {
+        const firstValue = value.split('->')[0].replace(/\s/g, '')
+        const secondValue = value.split('->')[1].replace(/\s/g, '')
+
+        value = { $gte: firstValue, $lte: secondValue }
+      }
 
       query.where(key, value)
     })
@@ -55,7 +76,10 @@ export abstract class MongooseRepository<TModel extends Document> {
    * @return The model founded or null
    * @throws Error when id is not a valid ObjectId
    */
-  async getOne(id?: string, options?: ApiRequestContract): Promise<TModel | null> {
+  async getOne(
+    id?: string,
+    options?: ApiRequestContract,
+  ): Promise<TModel | null> {
     const query = this.Model.findOne()
 
     if (id) {
@@ -90,7 +114,11 @@ export abstract class MongooseRepository<TModel extends Document> {
 
     this.factoryRequest(query, options)
 
-    return paginate(await query.exec(), await query.countDocuments(), pagination || { page: 0, limit: 10 })
+    return paginate(
+      await query.exec(),
+      await query.countDocuments(),
+      pagination || { page: 0, limit: 10 },
+    )
   }
 
   /**
