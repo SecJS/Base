@@ -14,7 +14,11 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
   protected abstract wheres: any[]
   protected abstract relations: any[]
 
-  private factoryRequest(Query: SelectQueryBuilder<TModel>, options?: ApiRequestContract, alias?: string) {
+  private factoryRequest(
+    Query: SelectQueryBuilder<TModel>,
+    options?: ApiRequestContract,
+    alias?: string,
+  ) {
     if (!options) {
       return
     }
@@ -48,7 +52,9 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       const value = where[key]
 
       if (!isInternRequest && !this.wheres?.includes(key)) {
-        throw new Error(`According to ${this.Model.constructor.name} model, it is not possible to filter by ${key}`)
+        throw new Error(
+          `According to ${this.Model.constructor.name} model, it is not possible to filter by ${key}`,
+        )
       }
 
       if (value === 'null') {
@@ -67,7 +73,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
         value.replace('%', '')
 
         query.andWhere(`${alias}.${key} like :${key}`, {
-          [key]:`%${value}%`
+          [key]: `%${value}%`,
         })
 
         return
@@ -137,10 +143,14 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
     includes.forEach(include => {
       if (!isInternRequest && !this.relations?.includes(include.relation)) {
-        throw new Error(`According to ${this.Model.constructor.name} model, it is not possible to include ${include.relation}`)
+        throw new Error(
+          `According to ${this.Model.constructor.name} model, it is not possible to include ${include.relation}`,
+        )
       }
 
-      const includeAlias = `${include.relation}-${new Token().generate()}`.toLocaleUpperCase()
+      const includeAlias = `${
+        include.relation
+      }-${new Token().generate()}`.toLocaleUpperCase()
 
       query.leftJoinAndSelect(`${alias}.${include.relation}`, includeAlias)
 
@@ -157,22 +167,33 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param options The options used to filter data
    * @return The paginated response with models retrieved
    */
-  async getAll(pagination?: PaginationContract, options?: ApiRequestContract): Promise<PaginatedResponse<TModel>> {
+  async getAll(
+    pagination?: PaginationContract,
+    options?: ApiRequestContract,
+  ): Promise<PaginatedResponse<TModel> | { data: TModel[]; total: number }> {
     const Query = this.createQueryBuilder(this.Model)
+
+    this.factoryRequest(Query, options)
 
     if (pagination) {
       Query.skip(pagination.page || 0)
       Query.take(pagination.limit || 10)
-    }
 
-    this.factoryRequest(Query, options)
+      const returnData = await Query.getManyAndCount()
+
+      return paginate(returnData[0], returnData[1], {
+        page: pagination.page || 0,
+        limit: pagination.limit || 10,
+        resourceUrl: pagination.resourceUrl,
+      })
+    }
 
     const returnData = await Query.getManyAndCount()
 
-    const data = returnData[0]
-    const total = returnData[1]
-
-    return paginate(data, total, pagination || { page: 0, limit: 10 })
+    return {
+      data: returnData[0],
+      total: returnData[1],
+    }
   }
 
   /**
@@ -192,7 +213,10 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param options The options used to filter data
    * @return The model founded or undefined
    */
-  async getOne(id?: string | number | null, options?: ApiRequestContract): Promise<TModel | undefined> {
+  async getOne(
+    id?: string | number | null,
+    options?: ApiRequestContract,
+  ): Promise<TModel | undefined> {
     const Query = this.createQueryBuilder()
 
     if (id) {
@@ -223,7 +247,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       throw new Error('MODEL_NOT_FOUND_UPDATE')
     }
 
-    Object.keys(body).forEach((key) => {
+    Object.keys(body).forEach(key => {
       model[key] = body[key]
     })
 
@@ -238,7 +262,10 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @return The model soft deleted or void if deleted
    * @throws Error if cannot find model with ID
    */
-  async deleteOne(id: string | number | any, soft = true): Promise<TModel | void> {
+  async deleteOne(
+    id: string | number | any,
+    soft = true,
+  ): Promise<TModel | void> {
     let model = id
 
     if (typeof id === 'string' || typeof id === 'number') {

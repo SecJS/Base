@@ -8,7 +8,6 @@ import {
   PaginationContract,
   PaginatedResponse,
 } from '@secjs/contracts'
-
 export abstract class MongooseRepository<TModel extends Document> {
   protected abstract Model: Model<TModel>
 
@@ -68,6 +67,14 @@ export abstract class MongooseRepository<TModel extends Document> {
     })
   }
 
+  private factoryQuery(options?: ApiRequestContract) {
+    const query = this.Model.find()
+
+    this.factoryRequest(query, options)
+
+    return query
+  }
+
   /**
    * Retrieves one data from Database
    *
@@ -105,20 +112,28 @@ export abstract class MongooseRepository<TModel extends Document> {
   async getAll(
     pagination?: PaginationContract,
     options?: ApiRequestContract,
-  ): Promise<PaginatedResponse<TModel>> {
-    const query = this.Model.find()
+  ): Promise<PaginatedResponse<TModel> | { data: TModel[]; total: number }> {
+    const queryItems = this.factoryQuery(options)
+    const queryCount = this.factoryQuery(options)
 
     if (pagination) {
-      query.skip(pagination.page || 0).limit(pagination.limit || 10)
+      queryItems.skip(pagination.page || 0).limit(pagination.limit || 10)
+
+      return paginate(
+        await queryItems.exec(),
+        await queryCount.countDocuments(),
+        {
+          page: pagination.page || 0,
+          limit: pagination.limit || 10,
+          resourceUrl: pagination.resourceUrl,
+        },
+      )
     }
 
-    this.factoryRequest(query, options)
-
-    return paginate(
-      await query.exec(),
-      await query.countDocuments(),
-      pagination || { page: 0, limit: 10 },
-    )
+    return {
+      data: await queryItems.exec(),
+      total: await queryCount.countDocuments(),
+    }
   }
 
   /**
