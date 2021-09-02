@@ -1,5 +1,3 @@
-import { paginate } from '@secjs/utils'
-import { Model, Document, isValidObjectId } from 'mongoose'
 import {
   ApiRequestContract,
   IncludesContract,
@@ -8,6 +6,9 @@ import {
   PaginationContract,
   PaginatedResponse,
 } from '@secjs/contracts'
+
+import { paginate } from '@secjs/utils'
+import { Model, Document, isValidObjectId } from 'mongoose'
 export abstract class MongooseRepository<TModel extends Document> {
   protected abstract Model: Model<TModel>
 
@@ -35,19 +36,19 @@ export abstract class MongooseRepository<TModel extends Document> {
     Object.keys(where).forEach(key => {
       let value: any = where[key]
 
-      if (value === 'null') value = null
-      if (value === '!null') value = { $ne: null }
-
       if (Array.isArray(value)) {
         value = { $in: value }
       }
 
-      if (value.includes('->')) {
+      if (typeof value === 'string' && value.includes('->')) {
         const firstValue = value.split('->')[0].replace(/\s/g, '')
         const secondValue = value.split('->')[1].replace(/\s/g, '')
 
         value = { $gte: firstValue, $lte: secondValue }
       }
+
+      if (value === 'null') value = null
+      if (value === '!null') value = { $ne: null }
 
       query.where(key, value)
     })
@@ -55,9 +56,7 @@ export abstract class MongooseRepository<TModel extends Document> {
 
   private factoryOrderBy(query: any, orderBy: OrderByContract) {
     Object.keys(orderBy).forEach(key => {
-      const value = orderBy[key]
-
-      query.sort(key, value)
+      query.sort(key, orderBy[key])
     })
   }
 
