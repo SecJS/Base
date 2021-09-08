@@ -56,7 +56,7 @@ export abstract class MongooseRepository<TModel extends Document> {
 
   private factoryOrderBy(query: any, orderBy: OrderByContract) {
     Object.keys(orderBy).forEach(key => {
-      query.sort(key, orderBy[key])
+      query.sort(key, orderBy[key].toUpperCase())
     })
   }
 
