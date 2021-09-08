@@ -6,6 +6,7 @@ import {
   PaginationContract,
   PaginatedResponse,
 } from '@secjs/contracts'
+
 import { Parser, paginate, Token } from '@secjs/utils'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 
@@ -53,9 +54,11 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
       if (!isInternRequest && !this.wheres?.includes(key)) {
         throw new Error(
-          `According to ${this.Model.constructor.name} model, it is not possible to filter by ${key}`,
+          `According to ${this.Model.name} model, it is not possible to filter by ${key}`,
         )
       }
+
+      if (!value) throw new Error('Where cannot be null, use null as string.')
 
       if (value === 'null') {
         query.andWhere(`${alias}.${key} IS NULL`)
@@ -123,9 +126,9 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     }
 
     Object.keys(orderBy).forEach(key => {
-      const value = orderBy[key]
+      const value: any = orderBy[key]
 
-      query.addOrderBy(`${alias}.${key}`, value)
+      query.addOrderBy(`${alias}.${key}`, value.toUpperCase())
     })
 
     return query
@@ -144,7 +147,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     includes.forEach(include => {
       if (!isInternRequest && !this.relations?.includes(include.relation)) {
         throw new Error(
-          `According to ${this.Model.constructor.name} model, it is not possible to include ${include.relation}`,
+          `According to ${this.Model.name} model, it is not possible to include ${include.relation}`,
         )
       }
 
@@ -171,7 +174,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     pagination?: PaginationContract,
     options?: ApiRequestContract,
   ): Promise<PaginatedResponse<TModel> | { data: TModel[]; total: number }> {
-    const Query = this.createQueryBuilder(this.Model)
+    const Query = this.createQueryBuilder(this.Model.name)
 
     this.factoryRequest(Query, options)
 
@@ -191,8 +194,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     const returnData = await Query.getManyAndCount()
 
     return {
-      data: returnData[0],
       total: returnData[1],
+      data: returnData[0],
     }
   }
 

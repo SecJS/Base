@@ -20,14 +20,14 @@ The intention behind this repository is to always maintain a `Base` project to a
 ## Installation
 
 ```bash
-yarn add @secjs/base
+npm install @secjs/base
 ```
 
 ### GuardBaseService
 
 ```ts
 import { User } from 'app/Models/User'
-import { GuardBaseService } from '@secjs/base'
+import { GuardBaseService } from '@secjs/base/services/GuardBaseService'
 
 class ContactService extends GuardBaseService<User> { 
   // You need to write all you methods in here, GuardBaseService
@@ -50,64 +50,89 @@ class ContactService extends GuardBaseService<User> {
 
 ---
 
-### LucidBaseRepository
+### LucidRepository
 
-> Use LucidBaseRepository to get nice methods based on ApiRequestContract
+> Use LucidRepository to get nice methods based on ApiRequestContract
 
 ```ts
 import { User } from 'app/Models/User'
-import { LucidBaseRepository } from '@secjs/base'
+import { LucidRepository } from '@secjs/base/repositories/LucidRepository'
 
-class UserRepository extends LucidBaseRepository<User> {
+class UserRepository extends LucidRepository<User> {
   protected wheres: ['id', 'name'] // What wheres can be executed by client
   protected relations: ['contacts'] // What relations can be get by client
 
   // Both, wheres and relations will only work for external requests.
-  protected Model = User // Give the Model value to Lucid, so he knows what to work with
+
+  protected Model = User // Give the Model value to Lucid, so he knows what to work with.
   
-  // You can subscribe LucidBaseRepository methods in here if you want!  
+  // You can subscribe LucidRepository methods in here if you want!  
 }
 ```
 
 ---
 
-### TypeOrmBaseRepository
+### TypeOrmRepository
 
-> Use TypeOrmBaseRepository to get nice methods based on ApiRequestContract
+> Use TypeOrmRepository to get nice methods based on ApiRequestContract
 
 ```ts
 import { User } from 'app/Models/User'
-import { TypeOrmBaseRepository } from '@secjs/base'
+import { TypeOrmRepository } from '@secjs/base/repositories/TypeOrmRepository'
 
-class UserRepository extends TypeOrmBaseRepository<User> {
+class UserRepository extends TypeOrmRepository<User> {
   protected wheres: ['id', 'name'] // What wheres can be executed by client
   protected relations: ['contacts'] // What relations can be get by client
   
   // Both, wheres and relations will only work for external requests.
 
-  protected Model = User.name // Give the Model value to Lucid, so he knows what to work with
-  // You can subscribe TypeOrmBaseRepository methods in here if you want!  
+  protected Model = User // Give the Model value to Lucid, so he knows what to work with.
+
+  // You can subscribe TypeOrmRepository methods in here if you want!
 }
 ```
 
 ---
 
-### MongooseBaseRepository
+### MongooseRepository
 
-> Use MongooseBaseRepository to get nice methods based on ApiRequestContract
+> Use MongooseRepository to get nice methods based on ApiRequestContract
 
 ```ts
 import { User } from 'app/Models/User'
-import { MongooseBaseRepository } from '@secjs/base'
+import { MongooseRepository } from '@secjs/base/repositories/MongooseRepository'
 
-class UserRepository extends MongooseBaseRepository<User> {
+class UserRepository extends MongooseRepository<User> {
   protected wheres: ['id', 'name'] // What wheres can be executed by client
   protected relations: ['contacts'] // What relations can be get by client
   
   // Both, wheres and relations will only work for external requests.
 
-  protected Model = new User() // Give the Model value to Mongoose, so he knows what to work with
-  // You can subscribe MongooseBaseRepository methods in here if you want!  
+  protected Model = User // Give the Model value to Mongoose, so he knows what to work with.
+
+  // You can subscribe MongooseRepository methods in here if you want!  
+}
+```
+
+---
+
+### PrismaRepository
+
+> Use PrismaRepository to get nice methods based on ApiRequestContract
+
+```ts
+import { User } from 'app/Models/User'
+import { PrismaRepository } from '@secjs/base/repositories/PrismaRepository'
+
+class UserRepository extends PrismaRepository<User> {
+  protected wheres: ['id', 'name'] // What wheres can be executed by client
+  protected relations: ['contacts'] // What relations can be get by client
+  
+  // Both, wheres and relations will only work for external requests.
+
+  protected Model = User // Give the Model value to Lucid, so he knows what to work with.
+
+  // You can subscribe PrismaRepository methods in here if you want!
 }
 ```
 
