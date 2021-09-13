@@ -22,7 +22,7 @@ export abstract class PrismaRepository<TModel> {
       return {}
     }
 
-    const { where, orderBy, includes, isInternRequest } = options
+    const { where, orderBy, includes, isInternRequest = true } = options
 
     if (where && Object.keys(where).length) {
       prismaQuery.where = this.factoryWhere(where, isInternRequest)
@@ -39,7 +39,7 @@ export abstract class PrismaRepository<TModel> {
     return prismaQuery
   }
 
-  private factoryWhere(where: WhereContract, isInternRequest = false) {
+  private factoryWhere(where: WhereContract, isInternRequest: boolean) {
     Object.keys(where).forEach(key => {
       const value = where[key]
 
@@ -98,7 +98,7 @@ export abstract class PrismaRepository<TModel> {
 
   private factoryIncludes(
     includes: IncludesContract[],
-    isInternRequest = false,
+    isInternRequest: boolean,
   ) {
     const include: any = {}
 
