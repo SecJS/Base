@@ -44,7 +44,20 @@ export abstract class PrismaRepository<TModel> {
       const value = where[key]
 
       if (!isInternRequest && !this.wheres?.includes(key)) {
-        throw new Error(`It is not possible to filter by ${key}`)
+        const status = 400
+        const message = `It is not possible to filter by ${key}`
+
+        throw {
+          status,
+          stack: new Error(message),
+          name: 'REPOSITORY_WHERE_ERROR',
+          message: {
+            message,
+            statusCode: status,
+            error: 'Bad Request',
+          },
+          isSecJsException: true,
+        }
       }
 
       if (value === 'null') {
@@ -104,7 +117,20 @@ export abstract class PrismaRepository<TModel> {
 
     includes.forEach(i => {
       if (!isInternRequest && !this.relations?.includes(i.relation)) {
-        throw new Error(`It is not possible to include ${i.relation} relation`)
+        const status = 400
+        const message = `It is not possible to include ${i.relation} relation`
+
+        throw {
+          status,
+          stack: new Error(message),
+          name: 'REPOSITORY_RELATION_ERROR',
+          message: {
+            message,
+            statusCode: status,
+            error: 'Bad Request',
+          },
+          isSecJsException: true,
+        }
       }
 
       include[i.relation] = this.factoryRequest(i)
@@ -189,7 +215,20 @@ export abstract class PrismaRepository<TModel> {
       model = await this.getOne(id)
 
       if (!model) {
-        throw new Error('MODEL_NOT_FOUND_UPDATE')
+        const status = 404
+        const message = 'The model id has not been found to update.'
+
+        throw {
+          status,
+          stack: new Error(message),
+          name: 'MODEL_NOT_FOUND_UPDATE',
+          message: {
+            message,
+            statusCode: status,
+            error: 'Not Found',
+          },
+          isSecJsException: true,
+        }
       }
     }
 
@@ -211,13 +250,39 @@ export abstract class PrismaRepository<TModel> {
       model = await this.getOne(id)
 
       if (!model) {
-        throw new Error('MODEL_NOT_FOUND_DELETE')
+        const status = 404
+        const message = 'The model id has not been found to delete.'
+
+        throw {
+          status,
+          stack: new Error(message),
+          name: 'MODEL_NOT_FOUND_DELETE',
+          message: {
+            message,
+            statusCode: status,
+            error: 'Not Found',
+          },
+          isSecJsException: true,
+        }
       }
     }
 
     if (soft) {
       if (model.deletedAt) {
-        throw new Error('MODEL_IS_ALREADY_DELETED')
+        const status = 400
+        const message = 'The model id has been already deleted.'
+
+        throw {
+          status,
+          stack: new Error(message),
+          name: 'MODEL_ALREADY_DELETED',
+          message: {
+            message,
+            statusCode: status,
+            error: 'Bad Request',
+          },
+          isSecJsException: true,
+        }
       }
 
       return this.updateOne(model, { deletedAt: new Date() })
