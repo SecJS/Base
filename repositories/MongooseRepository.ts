@@ -9,7 +9,11 @@ import {
 
 import { paginate } from '@secjs/utils'
 import { Model, Document, isValidObjectId } from 'mongoose'
-import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@secjs/exceptions'
+import {
+  BadRequestException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@secjs/exceptions'
 
 export abstract class MongooseRepository<TModel extends Document> {
   protected abstract Model: Model<TModel>
@@ -162,7 +166,9 @@ export abstract class MongooseRepository<TModel extends Document> {
       model = await this.getOne(id)
 
       if (!model) {
-        throw new NotFoundException('The model id has not been found to update.')
+        throw new NotFoundException(
+          'The model id has not been found to update.',
+        )
       }
     }
 
@@ -189,7 +195,9 @@ export abstract class MongooseRepository<TModel extends Document> {
       model = await this.getOne(id)
 
       if (!model) {
-        throw new NotFoundException('The model id has not been found to delete.')
+        throw new NotFoundException(
+          'The model id has not been found to delete.',
+        )
       }
     }
 

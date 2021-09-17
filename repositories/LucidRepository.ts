@@ -1,6 +1,12 @@
 import { DateTime } from 'luxon'
 import { BadRequestException, NotFoundException } from '@secjs/exceptions'
-import { ApiRequestContract, IncludesContract, OrderByContract, WhereContract, PaginationContract } from '@secjs/contracts'
+import {
+  ApiRequestContract,
+  IncludesContract,
+  OrderByContract,
+  WhereContract,
+  PaginationContract,
+} from '@secjs/contracts'
 
 export abstract class LucidRepository<TModel> {
   protected abstract Model: TModel | any
@@ -56,7 +62,10 @@ export abstract class LucidRepository<TModel> {
    * @param options The options used to filter data
    * @return The paginated response with models retrieved
    */
-  async getAll(pagination?: PaginationContract, data?: ApiRequestContract): Promise<TModel[]> {
+  async getAll(
+    pagination?: PaginationContract,
+    data?: ApiRequestContract,
+  ): Promise<TModel[]> {
     const Query = this.Model.query()
 
     if (pagination) {
@@ -75,7 +84,10 @@ export abstract class LucidRepository<TModel> {
    * @param options The options used to filter data
    * @return The model founded or null
    */
-  async getOne(id?: string | null, data?: ApiRequestContract): Promise<TModel | undefined> {
+  async getOne(
+    id?: string | null,
+    data?: ApiRequestContract,
+  ): Promise<TModel | undefined> {
     const Query = this.Model.query()
 
     if (id) {
@@ -106,13 +118,13 @@ export abstract class LucidRepository<TModel> {
    * @throws NotFoundException if cannot find model with ID
    */
   async updateOne(id: string, payload: any): Promise<TModel> {
-    const model = await this.getOne(id) as any
+    const model = (await this.getOne(id)) as any
 
     if (!model) {
       throw new NotFoundException('The model id has not been found to update.')
     }
 
-    Object.keys(payload).map((key) => {
+    Object.keys(payload).forEach(key => {
       model[key] = payload[key]
     })
 
@@ -129,7 +141,7 @@ export abstract class LucidRepository<TModel> {
    * @throws BadRequestException if model is already deleted
    */
   async deleteOne(id: string): Promise<TModel> {
-    const model = await this.getOne(id) as any
+    const model = (await this.getOne(id)) as any
 
     if (!model) {
       throw new NotFoundException('The model id has not been found to delete.')

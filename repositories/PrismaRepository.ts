@@ -7,8 +7,13 @@ import {
   PaginatedResponse,
 } from '@secjs/contracts'
 
+import {
+  BadRequestException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@secjs/exceptions'
+
 import { paginate } from '@secjs/utils'
-import { BadRequestException, NotFoundException } from '@secjs/exceptions'
 
 export abstract class PrismaRepository<TModel> {
   protected abstract Model: TModel | any
@@ -45,20 +50,9 @@ export abstract class PrismaRepository<TModel> {
       const value = where[key]
 
       if (!isInternRequest && !this.wheres?.includes(key)) {
-        const status = 400
-        const message = `It is not possible to filter by ${key}`
-
-        throw {
-          status,
-          stack: new Error(message),
-          name: 'REPOSITORY_WHERE_ERROR',
-          message: {
-            message,
-            statusCode: status,
-            error: 'Bad Request',
-          },
-          isSecJsException: true,
-        }
+        throw new UnprocessableEntityException(
+          `It is not possible to filter by ${key}`,
+        )
       }
 
       if (value === 'null') {
@@ -118,20 +112,9 @@ export abstract class PrismaRepository<TModel> {
 
     includes.forEach(i => {
       if (!isInternRequest && !this.relations?.includes(i.relation)) {
-        const status = 400
-        const message = `It is not possible to include ${i.relation} relation`
-
-        throw {
-          status,
-          stack: new Error(message),
-          name: 'REPOSITORY_RELATION_ERROR',
-          message: {
-            message,
-            statusCode: status,
-            error: 'Bad Request',
-          },
-          isSecJsException: true,
-        }
+        throw new UnprocessableEntityException(
+          `It is not possible to include ${i.relation} relation`,
+        )
       }
 
       include[i.relation] = this.factoryRequest(i)
@@ -146,6 +129,7 @@ export abstract class PrismaRepository<TModel> {
    * @param pagination The pagination used to paginate data
    * @param options The options used to filter data
    * @return The paginated response with models retrieved
+   * @throws UnprocessableEntityException When trying to filter or include something outside the where/include array.
    */
   async getAll(
     pagination?: PaginationContract,
@@ -177,6 +161,7 @@ export abstract class PrismaRepository<TModel> {
    * @param id The id of the model
    * @param options The options used to filter data
    * @return The model founded or undefined
+   * @throws UnprocessableEntityException When trying to filter or include something outside the where/include array.
    */
   async getOne(
     id?: string,
@@ -216,7 +201,9 @@ export abstract class PrismaRepository<TModel> {
       model = await this.getOne(id)
 
       if (!model) {
-        throw new NotFoundException('The model id has not been found to update.')
+        throw new NotFoundException(
+          'The model id has not been found to update.',
+        )
       }
     }
 
@@ -239,7 +226,9 @@ export abstract class PrismaRepository<TModel> {
       model = await this.getOne(id)
 
       if (!model) {
-        throw new NotFoundException('The model id has not been found to delete.')
+        throw new NotFoundException(
+          'The model id has not been found to delete.',
+        )
       }
     }
 

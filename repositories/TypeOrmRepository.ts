@@ -7,9 +7,14 @@ import {
   PaginatedResponse,
 } from '@secjs/contracts'
 
+import {
+  BadRequestException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@secjs/exceptions'
+
 import { Parser, paginate, Token } from '@secjs/utils'
 import { Repository, SelectQueryBuilder } from 'typeorm'
-import { BadRequestException, NotFoundException } from '@secjs/exceptions'
 
 export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
   protected abstract Model: any
@@ -54,8 +59,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       const value = where[key]
 
       if (!isInternRequest && !this.wheres?.includes(key)) {
-        throw new Error(
-          `According to ${this.Model.name} model, it is not possible to filter by ${key}`,
+        throw new UnprocessableEntityException(
+          `It is not possible to filter by ${key}`,
         )
       }
 
@@ -147,8 +152,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
     includes.forEach(include => {
       if (!isInternRequest && !this.relations?.includes(include.relation)) {
-        throw new Error(
-          `According to ${this.Model.name} model, it is not possible to include ${include.relation}`,
+        throw new UnprocessableEntityException(
+          `It is not possible to include ${include.relation} relation`,
         )
       }
 
@@ -170,6 +175,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param pagination The pagination used to paginate data
    * @param options The options used to filter data
    * @return The paginated response with models retrieved
+   * @throws UnprocessableEntityException When trying to filter or include something outside the where/include array.
    */
   async getAll(
     pagination?: PaginationContract,
@@ -216,6 +222,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param id The id of the model
    * @param options The options used to filter data
    * @return The model founded or undefined
+   * @throws UnprocessableEntityException When trying to filter or include something outside the where/include array.
    */
   async getOne(
     id?: string | number | null,
