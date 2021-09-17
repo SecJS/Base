@@ -8,6 +8,7 @@ import {
 } from '@secjs/contracts'
 
 import { paginate } from '@secjs/utils'
+import { BadRequestException, NotFoundException } from '@secjs/exceptions'
 
 export abstract class PrismaRepository<TModel> {
   protected abstract Model: TModel | any
@@ -206,7 +207,7 @@ export abstract class PrismaRepository<TModel> {
    * @param id The id or model that is going to be updated
    * @param body The body that is going to be used to update
    * @return The model updated with body information
-   * @throws Error if cannot find model with ID
+   * @throws NotFoundException if cannot find model with ID
    */
   async updateOne(id: any, body: any): Promise<TModel> {
     let model = id
@@ -215,20 +216,7 @@ export abstract class PrismaRepository<TModel> {
       model = await this.getOne(id)
 
       if (!model) {
-        const status = 404
-        const message = 'The model id has not been found to update.'
-
-        throw {
-          status,
-          stack: new Error(message),
-          name: 'MODEL_NOT_FOUND_UPDATE',
-          message: {
-            message,
-            statusCode: status,
-            error: 'Not Found',
-          },
-          isSecJsException: true,
-        }
+        throw new NotFoundException('The model id has not been found to update.')
       }
     }
 
@@ -241,7 +229,8 @@ export abstract class PrismaRepository<TModel> {
    * @param id The id or model that is going to be deleted
    * @param soft If is a soft delete or a true delete from database
    * @return The model soft deleted or void if deleted
-   * @throws Error if cannot find model with ID
+   * @throws NotFoundException if cannot find model with ID
+   * @throws BadRequestException if model is already deleted
    */
   async deleteOne(id: any, soft = true): Promise<TModel | void> {
     let model = id
@@ -250,39 +239,13 @@ export abstract class PrismaRepository<TModel> {
       model = await this.getOne(id)
 
       if (!model) {
-        const status = 404
-        const message = 'The model id has not been found to delete.'
-
-        throw {
-          status,
-          stack: new Error(message),
-          name: 'MODEL_NOT_FOUND_DELETE',
-          message: {
-            message,
-            statusCode: status,
-            error: 'Not Found',
-          },
-          isSecJsException: true,
-        }
+        throw new NotFoundException('The model id has not been found to delete.')
       }
     }
 
     if (soft) {
       if (model.deletedAt) {
-        const status = 400
-        const message = 'The model id has been already deleted.'
-
-        throw {
-          status,
-          stack: new Error(message),
-          name: 'MODEL_ALREADY_DELETED',
-          message: {
-            message,
-            statusCode: status,
-            error: 'Bad Request',
-          },
-          isSecJsException: true,
-        }
+        throw new BadRequestException('The model id has been already deleted.')
       }
 
       return this.updateOne(model, { deletedAt: new Date() })
