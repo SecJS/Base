@@ -1,4 +1,5 @@
 import { BaseService } from './BaseService'
+import { NotImplementedException } from '@secjs/exceptions'
 
 interface IGuard {
   id?: string | number
@@ -18,7 +19,7 @@ export class GuardBaseService<T extends IGuard> extends BaseService<T> {
    */
   get guard(): T {
     if (!this._guard) {
-      throw new Error('GUARD_UNSET')
+      throw new NotImplementedException('Guard has not been implemented.')
     }
 
     return this._guard

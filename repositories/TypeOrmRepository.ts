@@ -7,6 +7,12 @@ import {
   PaginatedResponse,
 } from '@secjs/contracts'
 
+import {
+  BadRequestException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@secjs/exceptions'
+
 import { Parser, paginate, Token } from '@secjs/utils'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 
@@ -53,8 +59,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
       const value = where[key]
 
       if (!isInternRequest && !this.wheres?.includes(key)) {
-        throw new Error(
-          `According to ${this.Model.name} model, it is not possible to filter by ${key}`,
+        throw new UnprocessableEntityException(
+          `It is not possible to filter by ${key}`,
         )
       }
 
@@ -146,8 +152,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
 
     includes.forEach(include => {
       if (!isInternRequest && !this.relations?.includes(include.relation)) {
-        throw new Error(
-          `According to ${this.Model.name} model, it is not possible to include ${include.relation}`,
+        throw new UnprocessableEntityException(
+          `It is not possible to include ${include.relation} relation`,
         )
       }
 
@@ -169,6 +175,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param pagination The pagination used to paginate data
    * @param options The options used to filter data
    * @return The paginated response with models retrieved
+   * @throws UnprocessableEntityException When trying to filter or include something outside the where/include array.
    */
   async getAll(
     pagination?: PaginationContract,
@@ -215,6 +222,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param id The id of the model
    * @param options The options used to filter data
    * @return The model founded or undefined
+   * @throws UnprocessableEntityException When trying to filter or include something outside the where/include array.
    */
   async getOne(
     id?: string | number | null,
@@ -237,7 +245,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param id The id or model that is going to be updated
    * @param body The body that is going to be used to update
    * @return The model updated with body information
-   * @throws Error if cannot find model with ID
+   * @throws NotFoundException if cannot find model with ID
    */
   async updateOne(id: string | number | any, body: any): Promise<TModel | any> {
     let model = id
@@ -247,7 +255,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     }
 
     if (!model) {
-      throw new Error('MODEL_NOT_FOUND_UPDATE')
+      throw new NotFoundException('The model id has not been found to update.')
     }
 
     Object.keys(body).forEach(key => {
@@ -263,7 +271,8 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
    * @param id The id or model that is going to be deleted
    * @param soft If is a soft delete or a true delete from database
    * @return The model soft deleted or void if deleted
-   * @throws Error if cannot find model with ID
+   * @throws NotFoundException if cannot find model with ID
+   * @throws BadRequestException if model is already deleted
    */
   async deleteOne(
     id: string | number | any,
@@ -276,14 +285,14 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     }
 
     if (!model) {
-      throw new Error('MODEL_NOT_FOUND_DELETE')
-    }
-
-    if (model.deletedAt) {
-      throw new Error('MODEL_IS_ALREADY_DELETED')
+      throw new NotFoundException('The model id has not been found to delete.')
     }
 
     if (soft) {
+      if (model.deletedAt) {
+        throw new BadRequestException('The model id has been already deleted.')
+      }
+
       return this.updateOne(id, { deletedAt: new Date() })
     }
 

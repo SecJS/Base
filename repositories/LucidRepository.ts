@@ -1,5 +1,12 @@
 import { DateTime } from 'luxon'
-import { ApiRequestContract, IncludesContract, OrderByContract, WhereContract, PaginationContract } from '@secjs/contracts'
+import { BadRequestException, NotFoundException } from '@secjs/exceptions'
+import {
+  ApiRequestContract,
+  IncludesContract,
+  OrderByContract,
+  WhereContract,
+  PaginationContract,
+} from '@secjs/contracts'
 
 export abstract class LucidRepository<TModel> {
   protected abstract Model: TModel | any
@@ -48,19 +55,17 @@ export abstract class LucidRepository<TModel> {
     })
   }
 
-  async getOne(id?: string | null, data?: ApiRequestContract): Promise<TModel | undefined> {
-    const Query = this.Model.query()
-
-    if (id) {
-      Query.where('id', id)
-    }
-
-    this.factoryRequest(Query, data)
-
-    return Query.first()
-  }
-
-  async getAll(pagination?: PaginationContract, data?: ApiRequestContract): Promise<TModel[]> {
+  /**
+   * Retrieves multiple data from Database
+   *
+   * @param pagination The pagination used to paginate data
+   * @param options The options used to filter data
+   * @return The paginated response with models retrieved
+   */
+  async getAll(
+    pagination?: PaginationContract,
+    data?: ApiRequestContract,
+  ): Promise<TModel[]> {
     const Query = this.Model.query()
 
     if (pagination) {
@@ -72,33 +77,78 @@ export abstract class LucidRepository<TModel> {
     return Query
   }
 
-  async create(payload: TModel): Promise<TModel> {
+  /**
+   * Retrieves one data from Database
+   *
+   * @param id The id of the model
+   * @param options The options used to filter data
+   * @return The model founded or null
+   */
+  async getOne(
+    id?: string | null,
+    data?: ApiRequestContract,
+  ): Promise<TModel | undefined> {
+    const Query = this.Model.query()
+
+    if (id) {
+      Query.where('id', id)
+    }
+
+    this.factoryRequest(Query, data)
+
+    return Query.first()
+  }
+
+  /**
+   * Store one in database
+   *
+   * @param body The body that is going to be used to create
+   * @return The model created with body information
+   */
+  async createOne(payload: TModel): Promise<TModel> {
     return this.Model.create(payload)
   }
 
-  async update(id: string, payload: any): Promise<TModel> {
-    const model = await this.getOne(id) as any
+  /**
+   * Update one from database
+   *
+   * @param id The id or model that is going to be updated
+   * @param body The body that is going to be used to update
+   * @return The model updated with body information
+   * @throws NotFoundException if cannot find model with ID
+   */
+  async updateOne(id: string, payload: any): Promise<TModel> {
+    const model = (await this.getOne(id)) as any
 
     if (!model) {
-      throw new Error('MODEL_NOT_FOUND_UPDATE')
+      throw new NotFoundException('The model id has not been found to update.')
     }
 
-    Object.keys(payload).map((key) => {
+    Object.keys(payload).forEach(key => {
       model[key] = payload[key]
     })
 
     return model.save()
   }
 
-  async delete(id: string): Promise<TModel> {
-    const model = await this.getOne(id) as any
+  /**
+   * Delete one from database
+   *
+   * @param id The id or model that is going to be deleted
+   * @param soft If is a soft delete or a true delete from database
+   * @return The model soft deleted or void if deleted
+   * @throws NotFoundException if cannot find model with ID
+   * @throws BadRequestException if model is already deleted
+   */
+  async deleteOne(id: string): Promise<TModel> {
+    const model = (await this.getOne(id)) as any
 
     if (!model) {
-      throw new Error('MODEL_NOT_FOUND_DELETE')
+      throw new NotFoundException('The model id has not been found to delete.')
     }
 
     if (model.deletedAt) {
-      throw new Error('MODEL_IS_ALREADY_DELETED')
+      throw new BadRequestException('The model id has been already deleted.')
     }
 
     model.deletedAt = DateTime.fromJSDate(new Date())
