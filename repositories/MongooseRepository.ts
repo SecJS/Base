@@ -1,4 +1,10 @@
 import {
+  BadRequestException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@secjs/exceptions'
+
+import {
   ApiRequestContract,
   IncludesContract,
   OrderByContract,
@@ -9,13 +15,11 @@ import {
 
 import { paginate } from '@secjs/utils'
 import { Model, Document, isValidObjectId } from 'mongoose'
-import {
-  BadRequestException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@secjs/exceptions'
 
 export abstract class MongooseRepository<TModel extends Document> {
+  protected abstract wheres: string[]
+  protected abstract relations: string[]
+
   protected abstract Model: Model<TModel>
 
   private factoryRequest(query: any, options?: ApiRequestContract) {
@@ -23,10 +27,10 @@ export abstract class MongooseRepository<TModel extends Document> {
       return
     }
 
-    const { where, orderBy, includes } = options
+    const { where, orderBy, includes, isInternRequest = true } = options
 
     if (where) {
-      this.factoryWhere(query, where)
+      this.factoryWhere(query, where, isInternRequest)
     }
 
     if (orderBy) {
@@ -34,27 +38,76 @@ export abstract class MongooseRepository<TModel extends Document> {
     }
 
     if (includes) {
-      this.factoryIncludes(query, includes)
+      this.factoryIncludes(query, includes, isInternRequest)
     }
   }
 
-  private factoryWhere(query: any, where: WhereContract) {
+  private factoryWhere(
+    query: any,
+    where: WhereContract,
+    isInternRequest: boolean,
+  ) {
     Object.keys(where).forEach(key => {
-      let value: any = where[key]
+      const value: any = where[key]
+
+      if (!isInternRequest && !this.wheres?.includes(key)) {
+        throw new UnprocessableEntityException(
+          `It is not possible to filter by ${key}`,
+        )
+      }
 
       if (Array.isArray(value)) {
-        value = { $in: value }
+        query.where(key, { $in: value })
+
+        return
+      }
+
+      if (typeof value === 'string' && value.includes(',')) {
+        if (value.startsWith('!')) {
+          query.where(key, {
+            $nin: value
+              .split(',')
+              .map(v => v.replace(/\s/g, '').replace('!', '')),
+          })
+
+          return
+        }
+
+        query.where(key, {
+          $in: value.split(',').map(v => v.replace(/\s/g, '')),
+        })
+
+        return
       }
 
       if (typeof value === 'string' && value.includes('->')) {
         const firstValue = value.split('->')[0].replace(/\s/g, '')
         const secondValue = value.split('->')[1].replace(/\s/g, '')
 
-        value = { $gte: firstValue, $lte: secondValue }
+        query.where(key, { $gte: firstValue, $lte: secondValue })
+
+        return
       }
 
-      if (value === 'null') value = null
-      if (value === '!null') value = { $ne: null }
+      if (typeof value === 'string' && value.includes('%')) {
+        value.replace('%', '')
+
+        query.where(key, { $regex: value, $options: 'i' })
+
+        return
+      }
+
+      if (value === 'null') {
+        query.where(key, null)
+
+        return
+      }
+
+      if (value === '!null') {
+        query.where(key, { $ne: null })
+
+        return
+      }
 
       query.where(key, value)
     })
@@ -66,8 +119,18 @@ export abstract class MongooseRepository<TModel extends Document> {
     })
   }
 
-  private factoryIncludes(query: any, includes: IncludesContract[]) {
+  private factoryIncludes(
+    query: any,
+    includes: IncludesContract[],
+    isInternRequest: boolean,
+  ) {
     includes.forEach(include => {
+      if (!isInternRequest && !this.relations?.includes(include.relation)) {
+        throw new UnprocessableEntityException(
+          `It is not possible to include ${include.relation} relation`,
+        )
+      }
+
       query.populate(include.relation)
     })
   }
@@ -175,6 +238,37 @@ export abstract class MongooseRepository<TModel extends Document> {
     Object.keys(body).forEach(key => {
       model[key] = body[key]
     })
+
+    return model.save()
+  }
+
+  /**
+   * Update the other side of the relation
+   *
+   * @param id The id or model that is going to be updated
+   * @param relationId The id of the relation that needs to be pushed to the array
+   * @param relationName The name of the relation inside the main model file
+   * @return The model updated with body information
+   * @throws NotFoundException if cannot find model with ID
+   */
+  async updateOneToMany(
+    id: any,
+    relationId: string | number,
+    relationName: string,
+  ): Promise<TModel> {
+    let model = id
+
+    if (typeof id === 'string') {
+      model = await this.getOne(id)
+
+      if (!model) {
+        throw new NotFoundException(
+          'The model id has not been found to update.',
+        )
+      }
+    }
+
+    model[relationName].push(relationId)
 
     return model.save()
   }
