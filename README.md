@@ -19,14 +19,14 @@ The intention behind this repository is to always maintain a `Base` project to a
 
 ## Installation
 
-> To use the high potential from @secjs/base you need to install first this packages from SecJS, 
-> it keeps as dev dependency because one day @secjs/core will install everything once.
+> To use the high potential from this package you need to install first this other packages from SecJS, 
+> it keeps as dev dependency because one day `@secjs/core` will install everything once.
 
 ```bash
 npm install @secjs/contracts @secjs/exceptions @secjs/utils
 ```
 
-> Than you can install @secjs/base
+> Then you can install the package using:
 
 ```bash
 npm install @secjs/base
