@@ -1,5 +1,3 @@
-import { DateTime } from 'luxon'
-import { BadRequestException, NotFoundException } from '@secjs/exceptions'
 import {
   ApiRequestContract,
   IncludesContract,
@@ -8,8 +6,11 @@ import {
   PaginationContract,
 } from '@secjs/contracts'
 
+import { DateTime } from 'luxon'
+import { BadRequestException, NotFoundException } from '@secjs/exceptions'
+
 export abstract class LucidRepository<TModel> {
-  protected abstract Model: TModel | any
+  protected abstract model: TModel | any
 
   private factoryRequest(query: any, data?: ApiRequestContract) {
     if (!data) {
@@ -66,7 +67,7 @@ export abstract class LucidRepository<TModel> {
     pagination?: PaginationContract,
     data?: ApiRequestContract,
   ): Promise<TModel[]> {
-    const Query = this.Model.query()
+    const Query = this.model.query()
 
     if (pagination) {
       Query.paginate(pagination.page || 0, pagination.limit || 10)
@@ -88,7 +89,7 @@ export abstract class LucidRepository<TModel> {
     id?: string | null,
     data?: ApiRequestContract,
   ): Promise<TModel | undefined> {
-    const Query = this.Model.query()
+    const Query = this.model.query()
 
     if (id) {
       Query.where('id', id)
@@ -106,7 +107,7 @@ export abstract class LucidRepository<TModel> {
    * @return The model created with body information
    */
   async createOne(payload: TModel): Promise<TModel> {
-    return this.Model.create(payload)
+    return this.model.create(payload)
   }
 
   /**

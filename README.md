@@ -32,28 +32,24 @@ npm install @secjs/contracts @secjs/exceptions @secjs/utils
 npm install @secjs/base
 ```
 
-### GuardBaseService
+### BaseService
+
+> Use to get nice methods to use with @secjs/base repositories
 
 ```ts
 import { User } from 'app/Models/User'
-import { GuardBaseService } from '@secjs/base/services/GuardBaseService'
+import { NotFoundException } from '@nestjs/common'
+import { BaseService } from '@secjs/base/services/BaseService'
+import { ContactResource } from 'app/Resources/ContactResource'
+import { ContactRepository } from 'app/Repositories/ContactRepository'
 
-class ContactService extends GuardBaseService<User> { 
-  // You need to write all you methods in here, GuardBaseService
-  // just makes sure it's an authenticated request and save the
-  // Guard/User in the context of the service.
-  
-  // Use like this -> new ContactService.setGuard(your/guard).getOne(1)
-  async getOne(id) {
-    const contact = // ... all the logic to get an Contact
+class ContactService extends BaseService<User> {
+  protected resourceName = 'contact'
+  protected resource = new ContactResource()
+  protected repository = new ContactRepository()
+  protected NotFoundException: any = NotFoundException // Define exception or use NotFoundException default from @secjs/exceptions
 
-    // If you use User as guard, you can access this.guard.user.id or this.guard.id
-    if (contact.user_id !== this.guard.user.id) {
-      throw new Error('Unauthorized')
-    }
-
-    return contact
-  }
+  // You can subscribe BaseService methods in here if you want!
 }
 ```
 
@@ -68,12 +64,12 @@ import { User } from 'app/Models/User'
 import { LucidRepository } from '@secjs/base/repositories/LucidRepository'
 
 class UserRepository extends LucidRepository<User> {
-  protected wheres: ['id', 'name'] // What wheres can be executed by client
-  protected relations: ['contacts'] // What relations can be get by client
+  model = User // Give the Model value to Lucid, so he knows what to work with.
+
+  wheres = ['id', 'name'] // What wheres can be executed by client
+  relations = ['contacts'] // What relations can be get by client
 
   // Both, wheres and relations will only work for external requests.
-
-  protected Model = User // Give the Model value to Lucid, so he knows what to work with.
   
   // You can subscribe LucidRepository methods in here if you want!  
 }
@@ -90,13 +86,13 @@ import { User } from 'app/Models/User'
 import { TypeOrmRepository } from '@secjs/base/repositories/TypeOrmRepository'
 
 class UserRepository extends TypeOrmRepository<User> {
-  protected wheres: ['id', 'name'] // What wheres can be executed by client
-  protected relations: ['contacts'] // What relations can be get by client
+  model = User // Give the Model value to Lucid, so he knows what to work with.
+  
+  wheres = ['id', 'name'] // What wheres can be executed by client
+  relations = ['contacts'] // What relations can be get by client
   
   // Both, wheres and relations will only work for external requests.
-
-  protected Model = User // Give the Model value to Lucid, so he knows what to work with.
-
+  
   // You can subscribe TypeOrmRepository methods in here if you want!
 }
 ```
@@ -108,16 +104,16 @@ class UserRepository extends TypeOrmRepository<User> {
 > Use MongooseRepository to get nice methods based on ApiRequestContract
 
 ```ts
-import { User } from 'app/Models/User'
+import { User, UserDocument } from 'app/Schemas/User'
 import { MongooseRepository } from '@secjs/base/repositories/MongooseRepository'
 
-class UserRepository extends MongooseRepository<User> {
-  protected wheres: ['id', 'name'] // What wheres can be executed by client
-  protected relations: ['contacts'] // What relations can be get by client
+class UserRepository extends MongooseRepository<UserDocument> {
+  model = User // Give the Model value to Mongoose, so he knows what to work with.
+
+  wheres = ['id', 'name'] // What wheres can be executed by client
+  relations = ['contacts'] // What relations can be get by client
   
   // Both, wheres and relations will only work for external requests.
-
-  protected Model = User // Give the Model value to Mongoose, so he knows what to work with.
 
   // You can subscribe MongooseRepository methods in here if you want!  
 }
@@ -134,12 +130,12 @@ import { User } from 'app/Models/User'
 import { PrismaRepository } from '@secjs/base/repositories/PrismaRepository'
 
 class UserRepository extends PrismaRepository<User> {
-  protected wheres: ['id', 'name'] // What wheres can be executed by client
-  protected relations: ['contacts'] // What relations can be get by client
+  model = User // Give the Model value to Lucid, so he knows what to work with.
+
+  wheres = ['id', 'name'] // What wheres can be executed by client
+  relations = ['contacts'] // What relations can be get by client
   
   // Both, wheres and relations will only work for external requests.
-
-  protected Model = User // Give the Model value to Lucid, so he knows what to work with.
 
   // You can subscribe PrismaRepository methods in here if you want!
 }

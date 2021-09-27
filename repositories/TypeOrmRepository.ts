@@ -17,9 +17,10 @@ import { Parser, paginate, Token } from '@secjs/utils'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 
 export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
-  protected abstract Model: any
-  protected abstract wheres: any[]
-  protected abstract relations: any[]
+  model: TModel | any
+
+  wheres: string[]
+  relations: string[]
 
   private factoryRequest(
     Query: SelectQueryBuilder<TModel>,
@@ -181,7 +182,7 @@ export abstract class TypeOrmRepository<TModel> extends Repository<TModel> {
     pagination?: PaginationContract,
     options?: ApiRequestContract,
   ): Promise<PaginatedResponse<TModel> | { data: TModel[]; total: number }> {
-    const Query = this.createQueryBuilder(this.Model.name)
+    const Query = this.createQueryBuilder(this.model.name)
 
     this.factoryRequest(Query, options)
 

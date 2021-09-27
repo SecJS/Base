@@ -1,3 +1,10 @@
+export * from './database/Seeder'
+export * from './database/Factory'
+
+export * from './decorators/Ignore'
+export * from './decorators/Options'
+export * from './decorators/ExtraParams'
+
 export * from './services/BaseService'
 export * from './services/GuardBaseService'
 

@@ -17,10 +17,10 @@ import { paginate } from '@secjs/utils'
 import { Model, Document, isValidObjectId } from 'mongoose'
 
 export abstract class MongooseRepository<TModel extends Document> {
-  protected abstract wheres: string[]
-  protected abstract relations: string[]
+  model: Model<TModel> | any
 
-  protected abstract Model: Model<TModel>
+  wheres: string[]
+  relations: string[]
 
   private factoryRequest(query: any, options?: ApiRequestContract) {
     if (!options) {
@@ -136,7 +136,7 @@ export abstract class MongooseRepository<TModel extends Document> {
   }
 
   private factoryQuery(options?: ApiRequestContract) {
-    const query = this.Model.find()
+    const query = this.model.find()
 
     this.factoryRequest(query, options)
 
@@ -155,7 +155,7 @@ export abstract class MongooseRepository<TModel extends Document> {
     id?: string,
     options?: ApiRequestContract,
   ): Promise<TModel | null> {
-    const query = this.Model.findOne()
+    const query = this.model.findOne()
 
     if (id) {
       if (!isValidObjectId(id)) {
@@ -211,7 +211,7 @@ export abstract class MongooseRepository<TModel extends Document> {
    * @return The model created with body information
    */
   async storeOne(body: any): Promise<TModel> {
-    return new this.Model(body).save()
+    return new this.model(body).save()
   }
 
   /**

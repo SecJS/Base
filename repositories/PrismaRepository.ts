@@ -16,10 +16,10 @@ import {
 import { paginate } from '@secjs/utils'
 
 export abstract class PrismaRepository<TModel> {
-  protected abstract Model: TModel | any
+  model: TModel | any
 
-  protected abstract wheres: string[]
-  protected abstract relations: string[]
+  wheres: string[]
+  relations: string[]
 
   private factoryRequest(options?: ApiRequestContract) {
     const prismaQuery: any = {}
@@ -136,13 +136,13 @@ export abstract class PrismaRepository<TModel> {
     options?: ApiRequestContract,
   ): Promise<PaginatedResponse<TModel> | { data: TModel[]; total: number }> {
     const queryItems = this.factoryRequest(options)
-    const total = await this.Model.count({ where: queryItems.where })
+    const total = await this.model.count({ where: queryItems.where })
 
     if (pagination) {
       queryItems.skip = pagination.page || 0
       queryItems.take = pagination.limit || 10
 
-      return paginate(await this.Model.findMany(queryItems), total, {
+      return paginate(await this.model.findMany(queryItems), total, {
         page: queryItems.skip,
         limit: queryItems.take,
         resourceUrl: pagination.resourceUrl,
@@ -151,7 +151,7 @@ export abstract class PrismaRepository<TModel> {
 
     return {
       total,
-      data: await this.Model.findMany(queryItems),
+      data: await this.model.findMany(queryItems),
     }
   }
 
@@ -173,7 +173,7 @@ export abstract class PrismaRepository<TModel> {
       query.where ? (query.where.id = id) : (query.where = { id })
     }
 
-    return this.Model.findFirst(query)
+    return this.model.findFirst(query)
   }
 
   /**
@@ -183,7 +183,7 @@ export abstract class PrismaRepository<TModel> {
    * @return The model created with body information
    */
   async storeOne(body: any): Promise<TModel> {
-    return this.Model.create({ data: body })
+    return this.model.create({ data: body })
   }
 
   /**
@@ -207,7 +207,7 @@ export abstract class PrismaRepository<TModel> {
       }
     }
 
-    return this.Model.update({ data: body, where: { id: model.id } })
+    return this.model.update({ data: body, where: { id: model.id } })
   }
 
   /**
@@ -240,6 +240,6 @@ export abstract class PrismaRepository<TModel> {
       return this.updateOne(model, { deletedAt: new Date() })
     }
 
-    return this.Model.delete({ where: { id: model.id } })
+    return this.model.delete({ where: { id: model.id } })
   }
 }
