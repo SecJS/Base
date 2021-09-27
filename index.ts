@@ -6,7 +6,6 @@ export * from './decorators/Options'
 export * from './decorators/ExtraParams'
 
 export * from './services/BaseService'
-export * from './services/GuardBaseService'
 
 export * from './repositories/LucidRepository'
 export * from './repositories/PrismaRepository'

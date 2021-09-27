@@ -1,7 +1,5 @@
-import { RepositoryContract } from '@secjs/contracts'
-
 export abstract class Seeder<TModel> {
-  protected abstract repository: RepositoryContract
+  protected abstract repository: any
 
   async seed(params: any): Promise<TModel> {
     return this.repository.storeOne(params)
