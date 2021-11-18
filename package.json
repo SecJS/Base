@@ -1,6 +1,6 @@
 {
   "name": "@secjs/base",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "license": "MIT",
   "author": "João Lenon",
   "repository": "https://github.com/SecJS/Base.git",
@@ -22,6 +22,8 @@
     "@types/node": "14.14.3",
     "@typescript-eslint/eslint-plugin": "4.31.0",
     "@typescript-eslint/parser": "4.31.0",
+    "commitizen": "4.2.4",
+    "cz-conventional-changelog": "3.3.0",
     "eslint": "7.32.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-config-standard": "16.0.3",
@@ -58,7 +60,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged",
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true"
     }
   },
   "jest": {
@@ -153,5 +156,10 @@
     "repositories/*.d.ts",
     "index.d.ts",
     "index.js"
-  ]
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
 }
