@@ -21,7 +21,7 @@
 
 The intention behind this repository is to always maintain a `Base` project to any NodeJS project.
 
-<img src=".github/base.jpg" width="200px" align="right" hspace="30px" vspace="100px">
+<img src=".github/base.png" width="200px" align="right" hspace="30px" vspace="100px">
 
 ## Installation
 
