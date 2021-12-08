@@ -1,6 +1,6 @@
 {
   "name": "@secjs/base",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "license": "MIT",
   "author": "João Lenon",
   "repository": "https://github.com/SecJS/Base.git",
@@ -148,6 +148,8 @@
   "files": [
     "decorators/*.js",
     "decorators/*.d.ts",
+    "resources/*.js",
+    "resources/*.d.ts",
     "database/*.js",
     "database/*.d.ts",
     "services/*.js",
