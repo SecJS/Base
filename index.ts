@@ -1,6 +1,8 @@
 export * from './database/Seeder'
 export * from './database/Factory'
 
+export * from './resources/Resource'
+
 export * from './decorators/Ignore'
 export * from './decorators/Options'
 export * from './decorators/ExtraParams'
