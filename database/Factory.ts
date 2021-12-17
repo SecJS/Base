@@ -1,6 +1,7 @@
 import * as faker from 'faker'
 
 import { Seeder } from './Seeder'
+import { ApiRequestContract } from '@secjs/contracts'
 
 export abstract class Factory<TModel> {
   protected faker = faker
@@ -87,5 +88,16 @@ export abstract class Factory<TModel> {
     this._extraParams = params
 
     return this
+  }
+
+  async isDeleted(id?: string, options?: ApiRequestContract): Promise<boolean> {
+    return this.seeder.isDeleted(id, options)
+  }
+
+  async isSoftDeleted(
+    id?: string,
+    options?: ApiRequestContract,
+  ): Promise<boolean> {
+    return this.seeder.isSoftDeleted(id, options)
   }
 }
